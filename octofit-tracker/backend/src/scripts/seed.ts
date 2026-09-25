@@ -1,3 +1,8 @@
+/**
+ * Seed command: npm run seed
+ * Populates the Octofit MongoDB database with sample users, teams,
+ * activities, leaderboard records, and workouts for local development.
+ */
 import mongoose from 'mongoose';
 import seedDatabase from './seed.js';
 import { randomBytes, scryptSync } from 'node:crypto';
