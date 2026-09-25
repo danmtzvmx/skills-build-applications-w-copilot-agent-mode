@@ -1,8 +1,10 @@
 import mongoose from 'mongoose';
 import { randomBytes, scryptSync } from 'node:crypto';
+import { pathToFileURL } from 'node:url';
 import { Activity, Leaderboard, Team, User, Workout } from '../models.js';
 
 const connectionString = process.env.MONGODB_URI || 'mongodb://localhost:27017/octofit_db';
+const seedPassword = 'Password123!';
 
 const teams = ['Trailblazers', 'Pulse Squad'];
 
@@ -31,13 +33,13 @@ const workouts = [
   { name: 'Cycling Intervals', description: 'Alternating hard and easy efforts to build cycling fitness.', category: 'Cardio', difficulty: 'Advanced', duration: 45 },
 ];
 
-function makeUnusableSeedPassword(): string {
+function createSeedPasswordHash(): string {
   const salt = randomBytes(16);
-  const hash = scryptSync(randomBytes(32), salt, 64);
+  const hash = scryptSync(seedPassword, salt, 64);
   return `scrypt$${salt.toString('hex')}$${hash.toString('hex')}`;
 }
 
-async function seedDatabase(): Promise<void> {
+export async function seedDatabase(): Promise<void> {
   try {
     await mongoose.connect(connectionString);
     console.log('Connected to octofit_db');
@@ -63,7 +65,7 @@ async function seedDatabase(): Promise<void> {
         { email: user.email },
         {
           $set: { username: user.username, name: user.name, team: teamId },
-          $setOnInsert: { email: user.email, password: makeUnusableSeedPassword() },
+          $setOnInsert: { email: user.email, password: createSeedPasswordHash() },
         },
         { upsert: true, returnDocument: 'after', runValidators: true },
       );
@@ -134,4 +136,9 @@ async function seedDatabase(): Promise<void> {
   }
 }
 
-seedDatabase();
+const isDirectExecution =
+  process.argv[1] !== undefined && import.meta.url === pathToFileURL(process.argv[1]).href;
+
+if (isDirectExecution) {
+  void seedDatabase();
+}
