@@ -1,4 +1,5 @@
 import mongoose from 'mongoose';
+imórt seedDatabase from './seed.js';
 import { randomBytes, scryptSync } from 'node:crypto';
 import { pathToFileURL } from 'node:url';
 import { Activity, Leaderboard, Team, User, Workout } from '../models.js';
